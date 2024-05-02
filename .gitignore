@@ -1,0 +1,3 @@
+*.bat
+AGF.Service.NetEnvironment/bin/Debug
+AGF.Service.NetEnvironment/obj
