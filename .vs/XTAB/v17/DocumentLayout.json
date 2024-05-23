@@ -3,7 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\agfab\\git_repos\\XTAB\\XTAB\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{96C8594D-4E6E-455A-9FE5-FF78825A8C93}|XTAB.csproj|c:\\users\\agfab\\git_repos\\xtab\\xtab\\xtab.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{00000000-0000-0000-0000-000000000000}|\u003CSolution\u003E|XTAB||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{96C8594D-4E6E-455A-9FE5-FF78825A8C93}|XTAB.csproj|C:\\Users\\agfab\\git_repos\\XTAB\\XTAB\\xtab.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{96C8594D-4E6E-455A-9FE5-FF78825A8C93}|XTAB.csproj|solutionrelative:xtab.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -14,20 +17,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 281,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 4,
           "Children": [
             {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "XTAB.cs",
-              "DocumentMoniker": "C:\\Users\\agfab\\git_repos\\XTAB\\XTAB\\XTAB.cs",
-              "RelativeDocumentMoniker": "XTAB.cs",
-              "ToolTip": "C:\\Users\\agfab\\git_repos\\XTAB\\XTAB\\XTAB.cs",
-              "RelativeToolTip": "XTAB.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAAfAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-02T17:20:56.915Z",
-              "EditorCaption": ""
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{eefa5220-e298-11d0-8f78-00a0c9110057}"
             },
             {
               "$type": "Bookmark",
@@ -40,6 +34,31 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{e1b7d1f8-9b3c-49b1-8f4f-bfc63a88835d}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "XTAB",
+              "DocumentMoniker": "C:\\Users\\agfab\\git_repos\\XTAB\\XTAB\\XTAB.csproj",
+              "RelativeDocumentMoniker": "XTAB.csproj",
+              "ToolTip": "C:\\Users\\agfab\\git_repos\\XTAB\\XTAB\\XTAB.csproj",
+              "RelativeToolTip": "XTAB.csproj",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2024-05-18T14:51:26.81Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "XTAB.cs",
+              "DocumentMoniker": "C:\\Users\\agfab\\git_repos\\XTAB\\XTAB\\XTAB.cs",
+              "RelativeDocumentMoniker": "XTAB.cs",
+              "ToolTip": "C:\\Users\\agfab\\git_repos\\XTAB\\XTAB\\XTAB.cs",
+              "RelativeToolTip": "XTAB.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAAFAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-02T17:20:56.915Z",
+              "EditorCaption": ""
             }
           ]
         }
