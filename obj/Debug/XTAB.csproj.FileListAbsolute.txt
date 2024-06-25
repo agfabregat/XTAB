@@ -1,12 +1,12 @@
 C:\Users\agfab\git_repos\XTAB\XTAB\bin\Debug\XTAB.dll
 C:\Users\agfab\git_repos\XTAB\XTAB\bin\Debug\XTAB.pdb
-C:\Users\agfab\git_repos\XTAB\XTAB\obj\Debug\XTAB.csproj.AssemblyReference.cache
-C:\Users\agfab\git_repos\XTAB\XTAB\obj\Debug\XTAB.csproj.CoreCompileInputs.cache
-C:\Users\agfab\git_repos\XTAB\XTAB\obj\Debug\XTAB.dll
-C:\Users\agfab\git_repos\XTAB\XTAB\obj\Debug\XTAB.pdb
 C:\Users\agfab\git_repos\XTAB\XTAB\bin\Debug\CommonVoters.dll
 C:\Users\agfab\git_repos\XTAB\XTAB\bin\Debug\Newtonsoft.Json.dll
 C:\Users\agfab\git_repos\XTAB\XTAB\bin\Debug\AGF.Service.Strings.Substrings.dll
 C:\Users\agfab\git_repos\XTAB\XTAB\bin\Debug\CommonVoters.pdb
 C:\Users\agfab\git_repos\XTAB\XTAB\bin\Debug\AGF.Service.Strings.Substrings.pdb
+C:\Users\agfab\git_repos\XTAB\XTAB\obj\Debug\XTAB.csproj.AssemblyReference.cache
+C:\Users\agfab\git_repos\XTAB\XTAB\obj\Debug\XTAB.csproj.CoreCompileInputs.cache
 C:\Users\agfab\git_repos\XTAB\XTAB\obj\Debug\XTAB.csproj.Up2Date
+C:\Users\agfab\git_repos\XTAB\XTAB\obj\Debug\XTAB.dll
+C:\Users\agfab\git_repos\XTAB\XTAB\obj\Debug\XTAB.pdb

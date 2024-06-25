@@ -1,24 +1,52 @@
-﻿using Newtonsoft.Json;
+﻿using CommonVoters;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace XTAB
 {
+
+    
     public class TabToHTML
     {
+
+        public static void MakeHTMLTableFileFromTabFile(XTAB.HtmlTableConfig htmlTableConfig, TabDelimitedFileParts rpt)
+        {
+            try
+            {
+
+                if (rpt.TBodyRows.Length > 0)  // if there anything in tbodyrows, it doesn't matter how many
+                {
+                    var tblHtml = XTAB.TabToHTML.Table(rpt, htmlTableConfig);
+                    var tblfn = htmlTableConfig.tabFileFullPath.Replace(".tab.csv", ".tbl.html");
+                    CommonVoters.Functions.WriteAllText(tblfn, tblHtml);
+
+                }
+            }
+            catch (Exception ee)
+            {
+                Functions.ERRORLOG("MakeHTMLTableFileFromTabFile, tabfile: " + htmlTableConfig.tabFileFullPath);
+            }
+        }
+
         public static void MakeHTMLTableFileFromTabFile(XTAB.HtmlTableConfig htmlTableConfig)
         {
-
-            var jsonTabDelimitedStr = System.IO.File.ReadAllText(htmlTableConfig.tabFileFullPath);
-            var rpt = JsonConvert.DeserializeObject<XTAB.TabDelimitedFileParts>(jsonTabDelimitedStr);
-            if (rpt.TBodyRows.Length > 0)
+            try
             {
-                var tblHtml = XTAB.TabToHTML.Table(rpt, htmlTableConfig);
-                var tblfn = htmlTableConfig.tabFileFullPath.Replace(".tab.csv", ".tbl.html");
-                CommonVoters.Functions.WriteAllText(tblfn, tblHtml);
+
+                var jsonTabDelimitedStr = System.IO.File.ReadAllText(htmlTableConfig.tabFileFullPath);
+                var rpt = JsonConvert.DeserializeObject<XTAB.TabDelimitedFileParts>(jsonTabDelimitedStr);
+                if (rpt.TBodyRows.Length > 0)  // if there anything in tbodyrows, it doesn't matter how many
+                {
+                    var tblHtml = XTAB.TabToHTML.Table(rpt, htmlTableConfig);
+                    var tblfn = htmlTableConfig.tabFileFullPath.Replace(".tab.csv", ".tbl.html");
+                    CommonVoters.Functions.WriteAllText(tblfn, tblHtml);
+
+                }
+            }
+            catch (Exception ee)
+            {
+                Functions.ERRORLOG("MakeHTMLTableFileFromTabFile, tabfile: " + htmlTableConfig.tabFileFullPath);
             }
         }
 
@@ -26,12 +54,14 @@ namespace XTAB
         {
 
             // /////////////////////////////
-            // set up the attributes for when there is bing/google search link columns appended
+        var jsLink = @" class=""ptr"" onclick=""fnp(this);""";
+        var linkArrow = "↖";
 
-            var bingColTemplate = "<td onclick=\"B(this)\">bing</td>";
+        var bingColTemplate = "<td onclick=\"B(this)\">bing</td>";
             var googleColTemplate = "<td onclick=\"G(this)\">google</td>";
-            var bingColStyle = "width: 40px; text-align:center; cursor:pointer; font-size:10px;";
-            var googleColStyle = "width: 45px; text-align:center; cursor:pointer; font-size:10px;";
+            var bingColStyle = $"width: {TableColWidths.bingColumn}px; text-align:center; cursor:pointer; font-size:10px;";
+            var googleColStyle = $"width: {TableColWidths.googleColumn}px; text-align:center; cursor:pointer; font-size:10px;";
+
             var SearchDataAttributes = String.Empty;
             var SearchKeyColumns = String.Empty;
             var SearchColumnsBingStyle = String.Empty;
@@ -43,7 +73,7 @@ namespace XTAB
             else
             {
                 SearchDataAttributes = $"data-SearchAttr=\"{htmlTableConfig.SearchLinksConfig.SearchLinkDataAttributes.Trim()}\"" + " " +
-                $"data-SearchKeys=\"{htmlTableConfig.SearchLinksConfig.SearchKeyColumnsToUseInUrl}\"";
+                $"data-SearchKeys=\"{htmlTableConfig.SearchLinksConfig.KeyColumnsToUseInProviderUrl}\"";
 
                 SearchColumnsRowTD = bingColTemplate + googleColTemplate;
                 if (htmlTableConfig.SearchLinksConfig.SearchProviders == CommonVoters.SearchProviders.BOTH)
@@ -71,31 +101,18 @@ namespace XTAB
                 }
             }
 
-
-
-
-            var dataLinks = "";
-            var jsLink = "";
-            var linkArrow = "";
-            if (htmlTableConfig.KeyLinkConfiguration.DisplayLinkInKeyColumns)
-            {
-                dataLinks = $@"data-linkcode=""{htmlTableConfig.KeyLinkConfiguration.FileNameCode}"" data-folder=""{htmlTableConfig.KeyLinkConfiguration.Folder}"" data-linkkeys=""{htmlTableConfig.KeyLinkConfiguration.NumberOfKeyColumnsUsedInVariablePartOfFileName}""";
-                jsLink = @" class=""ptr"" onclick=""fnp(this);""";
-                linkArrow = "&#x1F855;";
-            }
+            
             var rowOpen = "<tr>";
             var rowClose = "</tr>";
-
-
 
             // /////////////////////////////
             // calculate number of columns
             var tbodyRows = rpt.TBodyRows;
-            string[] allTbodyRows = tbodyRows.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] allTbodyRows = tbodyRows.Split(new char[] { htmlTableConfig.LineFeed }, StringSplitOptions.RemoveEmptyEntries);
             int numberOfRowsToCreate = (allTbodyRows.Length * htmlTableConfig.percentRowsToCreate) / 100;
 
-            var numericColumnPixWidth = 50;
-            string[] totCellsInRow = allTbodyRows[0].Split(new char[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            
+            string[] totCellsInRow = allTbodyRows[0].Split(new char[] { htmlTableConfig.Delim }, StringSplitOptions.RemoveEmptyEntries);
             var numberOfKeyColumns = htmlTableConfig.KeyColumnsWidths.Length;
             var totTableWidth = 0;
             for (var i = 0; i < htmlTableConfig.KeyColumnsWidths.Length; i++)
@@ -104,7 +121,7 @@ namespace XTAB
             }
             for (var i = 0; i < totCellsInRow.Length - numberOfKeyColumns; i++)
             {
-                totTableWidth += numericColumnPixWidth;
+                totTableWidth += TableColWidths.numericColumn;
             }
 
             // ///////////////////////////////////////////////////////////////
@@ -112,10 +129,13 @@ namespace XTAB
             var captionsStr = new StringBuilder();
             if (htmlTableConfig.Captions.Length > 0)
             {
-                foreach (var c in htmlTableConfig.Captions)
+                captionsStr.Append("<caption>");
+                captionsStr.Append(htmlTableConfig.Captions[0]);
+                for (var c=1; c<htmlTableConfig.Captions.Length; c++)
                 {
-                    captionsStr.Append("<caption>").Append(c).Append("</caption>");
+                    captionsStr.Append("<br>").Append(htmlTableConfig.Captions[c]);
                 }
+                captionsStr.Append("</caption>");
             }
 
             // ///////////////////////////////////////////////////////////////
@@ -160,7 +180,7 @@ namespace XTAB
             // all the remaining columns are result columns and are numeric and align Right
             for (var i = numberOfKeyColumns; i < totCellsInRow.Length; i++)
             {
-                var col = $@"#tbl td:nth-child({i + 1}) {{ text-align:right; width:""{htmlTableConfig.KeyColumnsWidths[i]}px;""}}";
+                var col = $@"#tbl td:nth-child({i + 1}) {{ text-align:right; width:{TableColWidths.numericColumn}px;}}";
                 styleStr.Append(col).Append(htmlTableConfig.LineFeed);
             }
 
@@ -186,10 +206,10 @@ namespace XTAB
 
 
             // ///////////////////////////////////////////////////
-            // the style of the top line of the captions
-            styleStr.Append(@"#cl {float: left;color: #efeaea;font-size: 18px;background: transparent; cursor:pointer;}").Append(htmlTableConfig.LineFeed);
-            styleStr.Append(@"#cc {text-alignment:center;}").Append(htmlTableConfig.LineFeed);
-            styleStr.Append(@"#cr {float: right;color: black;}").Append(htmlTableConfig.LineFeed);
+            // the style of the top line of the captions                           
+            styleStr.Append(@"#cl {float: left; padding-left:5px; cursor:pointer;}").Append(htmlTableConfig.LineFeed);
+            styleStr.Append(@"#cc {text-align:center;}").Append(htmlTableConfig.LineFeed);
+            styleStr.Append(@"#cr {float: right; padding-right: 5px; cursor:pointer;}").Append(htmlTableConfig.LineFeed);
 
             styleStr.Append("</style>").Append(htmlTableConfig.LineFeed);
 
@@ -218,7 +238,7 @@ namespace XTAB
             //      < th > Savings </th>
             //    </tr>
             //  </thead>
-            var theadTabs = rpt.TheadRows.Split(htmlTableConfig.Delim);
+            var theadTabs = rpt.TheadRows.Split('~');
             var thead = new StringBuilder();
             thead.Append("<thead>").Append(rowOpen);
             if (htmlTableConfig.SortAllowed)
@@ -258,8 +278,12 @@ namespace XTAB
             {
                 tbody.Append($@"<tr>");
                 string[] cellsInRow = allTbodyRows[row].Split(new char[] { htmlTableConfig.Delim }, StringSplitOptions.RemoveEmptyEntries);
-
-                tbody.Append($"<td{jsLink}>{linkArrow}{cellsInRow[0]}</td>");
+                if (htmlTableConfig.KeyLinkConfiguration.DisplayHyperlinkInRow(cellsInRow[htmlTableConfig.KeyLinkConfiguration.CompareValueInColumn], htmlTableConfig.KeyLinkConfiguration.WithThisConstantPredicate))
+                { tbody.Append($"<td{jsLink}>{linkArrow}{cellsInRow[0]}</td>"); }
+                else
+                {
+                    tbody.Append($"<td>{cellsInRow[0]}</td>");
+                }
                 // the rest of the cells in the row do not have a link, or all if x = 0
                 for (var c = 1; c < cellsInRow.Length; c++)
                 {
@@ -300,10 +324,10 @@ namespace XTAB
 
             var sb = new StringBuilder();
             sb.Append(styleStr.ToString());
-            
+            var dataLinks = $@"data-linkcode=""{htmlTableConfig.KeyLinkConfiguration.FileNameCode}"" data-folder=""{htmlTableConfig.KeyLinkConfiguration.Folder}"" data-linkCol0=""{htmlTableConfig.KeyLinkConfiguration.LinkCol0}"" data-linkkeys=""{htmlTableConfig.KeyLinkConfiguration.NumberOfKeyColumnsUsedForQueryStringInVariablePartOfFileName}""";               
             sb.Append($@"<table id=""tbl"" {dataLinks} {SearchDataAttributes}>");
 
-            if (htmlTableConfig.DisplayCaptions)
+            if (htmlTableConfig.DisplayCaption)
             {
                 sb.Append(captionsStr.ToString());
             }

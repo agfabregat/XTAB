@@ -21,17 +21,20 @@ namespace XTAB {
         public string Filter_ExcludeRowIfKeyContains { get; set; }
         public bool ShowOnlyKeys { get; set; }
         public KeyLinkConfiguration KeyLinkConfiguration { get; set; }
-        public char Delim { get; set; } = '\t';
-        public char LineFeed { get; set; } = '\n';
+        public string Delim { get; set; } = CommonConstants.tab;
+        public string LineFeed { get; set; } = "\n";
 
     }
 
     public class KeyLinkConfiguration
     {
-        public bool DisplayLinkInKeyColumns { get; set; }
+        public Func<string, int, bool> DisplayHyperlinkInRow { get; set; }
+        public int WithThisConstantPredicate { get; set; }
+        public int CompareValueInColumn { get; set; }
         public string FileNameCode { get; set; }
-        public int NumberOfKeyColumnsUsedInVariablePartOfFileName { get; set; }
+        public int NumberOfKeyColumnsUsedForQueryStringInVariablePartOfFileName { get; set; }
         public string Folder { get; set; }
+        public bool LinkCol0 { get; set; }
     }
     public class HtmlTableConfig
     {
@@ -42,7 +45,7 @@ namespace XTAB {
         public int[] KeyColumnsWidths { get; set; }
         public string[] KeyColumnsAlignment { get; set; }
         public bool SortAllowed { get; set; }
-        public bool DisplayCaptions { get; set; }
+        public bool DisplayCaption { get; set; }
         public bool DisplayTHead { get; set; }
         public bool DisplayTFoot { get; set; }
         public int percentRowsToCreate { get; set; } = 100;
@@ -64,10 +67,11 @@ namespace XTAB {
 
 
         public static string MakeOneToManyKeysOnlyTabDelimitedFile(XTAB.TabDelimitedFileConfiguration tabFileConfiguration, List<string> theRows)
-        {
-            var rtp = XTAB.CrossTab.OneToMany(tabFileConfiguration, theRows);
-            var tabFilePath = SaveTabDelimitedFile(tabFileConfiguration, rtp);
-            return tabFilePath;
+        {           
+           
+                var rtp = XTAB.CrossTab.OneToMany(tabFileConfiguration, theRows);
+                var tabFilePath = SaveTabDelimitedFile(tabFileConfiguration, rtp);
+                return tabFilePath;      
 
         }
 
@@ -83,18 +87,23 @@ namespace XTAB {
 
         public static string SaveTabDelimitedFile(XTAB.TabDelimitedFileConfiguration tabFileConfiguration, TabDelimitedFileParts rtp)
         {
-            var tabFileExtension = ".tab.csv";
 
             var jsonTabDelimitedStr = JsonConvert.SerializeObject(rtp);
-            jsonTabDelimitedStr = jsonTabDelimitedStr.Replace('~', tabFileConfiguration.Delim);    // this is needed to separate the key columns        
+            jsonTabDelimitedStr = jsonTabDelimitedStr.Replace("~", tabFileConfiguration.Delim);    // this is needed to separate the key columns        
+            string fullFilePath = MakeTabFileName(tabFileConfiguration, CommonConstants.tabFileExt);
 
+            var goodResult = CommonVoters.Functions.WriteAllText(fullFilePath, jsonTabDelimitedStr);
+
+            return goodResult ? fullFilePath : "";
+
+        }
+
+        public static string MakeTabFileName(TabDelimitedFileConfiguration tabFileConfiguration, string tabFileExtension)
+        {
             var justFn = tabFileConfiguration.KeyLinkConfiguration.FileNameCode;
             var folder = string.IsNullOrEmpty(tabFileConfiguration.KeyLinkConfiguration.Folder) ? "" : "\\" + tabFileConfiguration.KeyLinkConfiguration.Folder;
-            var fullFilePath = CommonVoters. CommonConstants.MakeFileName("REPORTS" + folder, justFn + tabFileExtension);
-
-            CommonVoters.Functions.WriteAllText(fullFilePath, jsonTabDelimitedStr);
+            var fullFilePath = CommonVoters.CommonConstants.MakeFileName("REPORTS" + folder, justFn.ToLower() + tabFileExtension.ToLower()).Replace(" ", "-");
             return fullFilePath;
-
         }
     }
 
@@ -136,17 +145,26 @@ namespace XTAB {
         // ///////////////////////////////////////////////////////////////////////////////////////////
         public static TabDelimitedFileParts OneToMany(TabDelimitedFileConfiguration tabFileConfiguration, List<string> theRows)
         {
-            var rtp = new TabDelimitedFileParts();
-
-            var tbody = new StringBuilder();
-            foreach(var r in theRows)
+            try
             {
-                tbody.Append(r.ToString()).Append(tabFileConfiguration.LineFeed);
+                var rtp = new TabDelimitedFileParts();
+
+                var tbody = new StringBuilder();
+                foreach (var r in theRows)
+                {
+                    tbody.Append(r.ToString()).Append(tabFileConfiguration.LineFeed);
+                }
+
+                rtp.TBodyRows = tbody.ToString().Replace("~", tabFileConfiguration.Delim);
+
+                rtp.TheadRows = tabFileConfiguration.VerticalKeyHead;
+                rtp.TFootRow = "";
+                return rtp;
             }
-            rtp.TBodyRows = tbody.ToString().Replace('~', tabFileConfiguration.Delim);
-            rtp.TheadRows = tabFileConfiguration.VerticalKeyHead;
-            rtp.TFootRow = "";
-            return rtp;
+            catch 
+            { 
+                return null; 
+            }
         }
 
         public static TabDelimitedFileParts XtabTable(TabDelimitedFileConfiguration tabFileConfig)
@@ -182,7 +200,7 @@ namespace XTAB {
 
             // //////////////////////////////////////
             // theadRow
-            rtp.TheadRows = PrepareTHeadRow(tabFileConfig.VerticalKeyHead, tabFileConfig.ShowOnlyKeys, totColumnsInSequence, tabFileConfig.Delim);
+            rtp.TheadRows = PrepareTHeadRow(tabFileConfig.VerticalKeyHead, tabFileConfig.ShowOnlyKeys, totColumnsInSequence, tabFileConfig.Delim, tabFileConfig.LineFeed);
 
             // ////////////////////////////////////////////////
             //rows by row this is tbody
@@ -272,13 +290,13 @@ namespace XTAB {
                     controlTotal += horizontaTot;
 
                 }
-                rowSb.Append(tabFileConfig.Delim);
+                rowSb.Append(tabFileConfig.LineFeed);
             }
 
             return (verticalTots, rowSb.ToString());
         }
 
-        private static string PrepareTFootRow(string numberSpecifier, bool showOnlyKeys, char tab, char lf, double controlTotal, double[] verticalTots)
+        private static string PrepareTFootRow(string numberSpecifier, bool showOnlyKeys, string tab, string lf, double controlTotal, double[] verticalTots)
         {
             var sb = new StringBuilder();
             if (showOnlyKeys) { }
@@ -303,23 +321,24 @@ namespace XTAB {
             return sb.ToString();
         }
 
-        private static string PrepareTHeadRow(string verticalKeyHead, bool showOnlyKeys, List<string> totColumnsInSequence, char tab)
+        private static string PrepareTHeadRow(string verticalKeyHead, bool showOnlyKeys, List<string> totColumnsInSequence, string tab, string lf)
         {
             var thead = new StringBuilder();
 
             //column Headings
-            thead.Append(verticalKeyHead).Append(tab); //this tab is for the column taken up by the keys of each row
+            thead.Append(verticalKeyHead); //this tab is for the column taken up by the keys of each row
 
             if (showOnlyKeys) { }
             else
             {
+                thead.Append(tab);
                 foreach (var k in totColumnsInSequence)
                 {
                     thead.Append(k).Append(tab);
                 }
                 thead.Append("TOTALS");
             }
-
+            thead.Append(lf);
             return thead.ToString();
         }
     }
